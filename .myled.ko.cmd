@@ -1,0 +1,1 @@
+cmd_/home/pi/RoboSys2019-Kadai/myled.ko := ld -r  -EL -T ./scripts/module-common.lds -T ./arch/arm/kernel/module.lds  --build-id  -o /home/pi/RoboSys2019-Kadai/myled.ko /home/pi/RoboSys2019-Kadai/myled.o /home/pi/RoboSys2019-Kadai/myled.mod.o ;  true
