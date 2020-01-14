@@ -75,7 +75,7 @@ static ssize_t gpio_read(struct file* filp, char* buf, size_t count, loff_t* pos
 	return size;
 }
 
-static struct file_operations led_fops = {
+static struct file_operations driver_fops = {
         .owner = THIS_MODULE,
         .write = gpio_write,
 	.read = gpio_read
@@ -88,26 +88,26 @@ static int __init init_mod(void)
 	set_gpio_output(PIN_LED);
 	set_gpio_input(PIN_SW);
 
-	retval = alloc_chrdev_region(&dev, 0, 1, "myled");
+	retval = alloc_chrdev_region(&dev, 0, 1, "driver");
 	if(retval < 0){
 		printk(KERN_ERR "alloc_chrdev_region failed.\n");
 		return retval;
 	}
 	printk(KERN_INFO "%s is loaded. major:%d\n",__FILE__,MAJOR(dev));
 
-	cdev_init(&cdv, &led_fops);
+	cdev_init(&cdv, &driver_fops);
         retval = cdev_add(&cdv, dev, 1);
         if(retval < 0){
                 printk(KERN_ERR "cdev_add failed. major:%d, minor:%d",MAJOR(dev),MINOR(dev));
                 return retval;
         }
 
-        cls = class_create(THIS_MODULE,"myled");
+        cls = class_create(THIS_MODULE,"driver");
         if(IS_ERR(cls)){
                 printk(KERN_ERR "class_create failed.");
                 return PTR_ERR(cls);
         }
-	device_create(cls, NULL, dev, NULL, "myled%d",MINOR(dev));
+	device_create(cls, NULL, dev, NULL, "driver%d",MINOR(dev));
 	return 0;
 }
 

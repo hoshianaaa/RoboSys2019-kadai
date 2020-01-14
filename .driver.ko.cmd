@@ -1,0 +1,1 @@
+cmd_/home/pi/RoboSys2019-Kadai/driver.ko := ld -r  -EL -T ./scripts/module-common.lds -T ./arch/arm/kernel/module.lds  --build-id  -o /home/pi/RoboSys2019-Kadai/driver.ko /home/pi/RoboSys2019-Kadai/driver.o /home/pi/RoboSys2019-Kadai/driver.mod.o ;  true
