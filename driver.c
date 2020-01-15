@@ -7,7 +7,7 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
-#define REG_BASE	0x3f000000
+#define REG_BASE 0x3f000000
 
 #define GPIO_BASE (REG_BASE + 0x200000)
 #define GPIO_SIZE 0xC0
