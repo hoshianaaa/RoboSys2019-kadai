@@ -728,6 +728,8 @@ deps_/home/pi/RoboSys2019-Kadai/driver.o := \
     $(wildcard include/config/indirect/pio.h) \
   include/linux/fwnode.h \
   include/linux/vmalloc.h \
+  include/linux/delay.h \
+  arch/arm/include/asm/delay.h \
 
 /home/pi/RoboSys2019-Kadai/driver.o: $(deps_/home/pi/RoboSys2019-Kadai/driver.o)
 

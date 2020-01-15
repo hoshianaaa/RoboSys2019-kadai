@@ -1,3 +1,4 @@
-echo 1 > /dev/myled0
-echo 0 > /dev/myled0
-cat /dev/myled0
+echo 1 > /dev/driver0
+echo 0 > /dev/driver0
+cat /dev/driver0
+tail /var/log/messages

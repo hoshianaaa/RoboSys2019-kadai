@@ -4,11 +4,39 @@
 #include <linux/device.h>
 #include <linux/uaccess.h>
 #include <linux/io.h>
+#include <linux/delay.h>
 
 #define BASE_ADD	0x3f000000
 #define BASE_ADD_GPIO	(0x200000 + BASE_ADD)
-#define PIN_SW 	25
-#define PIN_LED	24  
+#define MOTOR_DIR_PIN	24  
+
+#define PWMCLK_BASE 13
+
+/* Pwm Addr */
+#define PWM_OFFSET 0x20C000
+#define PWM_SIZE 0xC0
+#define PWM_BASE (BASE_ADD + PWM_OFFSET)
+
+/* PWM Index */
+#define PWM_CTRL 0x0
+#define PWM_STA 0x4
+#define PWM_DMAC 0x8
+#define PWM_RNG1 0x10
+#define PWM_DAT1 0x14
+#define PWM_FIF1 0x18
+#define PWM_RNG2 0x20
+#define PWM_DAT2 0x24
+
+#define PWM_BASECLK 9600000
+
+/* Clock Addr */
+#define CLK_OFFSET 0x101000
+#define CLK_SIZE 0x100
+#define CLK_BASE (BASE_ADD + CLK_OFFSET)
+
+/* Clock Offset */
+#define CLK_PWM_INDEX 0xa0
+#define CLK_PWMDIV_INDEX 0xa4
 
 MODULE_AUTHOR("Ryotaro Hoshina");
 MODULE_DESCRIPTION("driver");
@@ -19,6 +47,8 @@ static dev_t dev;
 static struct cdev cdv;
 static struct class *cls = NULL;
 static volatile u32 *gpio_base = NULL;
+static volatile void __iomem *pwm_base = NULL;
+static volatile void __iomem *clk_base = NULL;
 
 
 void set_gpio(u32 mode, int number_of_bcm){
@@ -34,13 +64,45 @@ void set_gpio(u32 mode, int number_of_bcm){
 }
 
 void set_gpio_input(int number_of_bcm) {
-	u32 mode = 0x000;
+	u32 mode = 0x00;
 	set_gpio(mode, number_of_bcm);
 }
 
 void set_gpio_output(int number_of_bcm) {
-	u32 mode = 0x001;
+	u32 mode = 0x01;
 	set_gpio(mode, number_of_bcm);
+}
+
+void set_gpio_alt0(int number_of_bcm) {
+	u32 mode = 0x04;
+	set_gpio(mode, number_of_bcm);
+}
+
+static int getPWMCount(int freq)
+{
+	if (freq < 1)
+		return PWM_BASECLK;
+	if (freq > 10000)
+		return PWM_BASECLK / 10000;
+
+	return PWM_BASECLK / freq;
+}
+
+static void pwm_write32(uint32_t offset, uint32_t val)
+{
+	pwm_base = ioremap_nocache(PWM_BASE, PWM_SIZE); 
+	iowrite32(val, pwm_base + offset);
+}
+
+static void set_pwm_freq(int freq)
+{
+	int dat;
+
+	dat = getPWMCount(freq);
+	pwm_write32(PWM_RNG2, dat);
+	pwm_write32(PWM_DAT2, dat >> 1);
+
+	return;
 }
 
 static ssize_t gpio_write(struct file* filp, const char* buf, size_t count, loff_t* pos)
@@ -49,44 +111,47 @@ static ssize_t gpio_write(struct file* filp, const char* buf, size_t count, loff
 	if(copy_from_user(&c,buf,sizeof(char)))
 		return -EFAULT;
 
-	if(c == '0')
-		gpio_base[10] = 1 << PIN_LED;
-	else if(c == '1')
-		gpio_base[7] = 1 << PIN_LED;
+	if(c == '0'){
+		gpio_base[7] = 1 << MOTOR_DIR_PIN;
+		set_pwm_freq(10);
+	}
+	else if(c == '1'){
+		gpio_base[7] = 1 << MOTOR_DIR_PIN;
+		set_pwm_freq(50);
+	}
+	else if(c == '2'){
+		set_pwm_freq(100);
+		gpio_base[7] = 1 << MOTOR_DIR_PIN;
+	}
 
 	return 1;
 }
 
-static ssize_t gpio_read(struct file* filp, char* buf, size_t count, loff_t* pos)
-{
-	int size = 0;
-	char catch_string[] = {0x0, 0x0};
-	int ret = ((gpio_base[13] & (0x01 << PIN_SW)) != 0);
-
-	catch_string[0] = '0' + ret;
-
-	catch_string[1] = '\n';
-	if(copy_to_user(buf+size,(const char *)catch_string, sizeof(catch_string))){
-		printk( KERN_INFO "copy_to_user failed\n" );
-		return -EFAULT;
-	}
-
-	size += sizeof(catch_string);
-	return size;
-}
 
 static struct file_operations driver_fops = {
         .owner = THIS_MODULE,
         .write = gpio_write,
-	.read = gpio_read
 };
 
 static int __init init_mod(void)
 {
 	int retval;
 
-	set_gpio_output(PIN_LED);
-	set_gpio_input(PIN_SW);
+	clk_base = ioremap_nocache(CLK_BASE, CLK_SIZE);
+
+	iowrite32(0x5a000000 | (1 << 5), clk_base + CLK_PWM_INDEX);
+	udelay(1000);
+
+	iowrite32(0x5a000000 | (2 << 12), clk_base + CLK_PWMDIV_INDEX);
+	iowrite32(0x5a000011, clk_base + CLK_PWM_INDEX);
+	
+	udelay(1000);
+
+	set_gpio_output(MOTOR_DIR_PIN);
+	set_gpio_alt0(PWMCLK_BASE);
+	
+	pwm_write32(PWM_CTRL, 0x00008181);
+	printk(KERN_DEBUG "pwm_ctrl:%08X\n", ioread32(pwm_base + PWM_CTRL));
 
 	retval = alloc_chrdev_region(&dev, 0, 1, "driver");
 	if(retval < 0){
