@@ -13,8 +13,8 @@
 ## 参考  
 + [参考プログラム](https://github.com/rt-net/RaspberryPiMouse)
 ## 実行方法  
-'''
+```bash
 bash reload.bash  
 echo {周波数} > /dev/driver0
-'''
+```
 
