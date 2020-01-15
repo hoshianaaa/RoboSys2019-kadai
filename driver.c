@@ -176,8 +176,6 @@ static ssize_t motor_write(struct file* filp, const char* buf, size_t count, lof
 	int freq, bufcnt;
 	
 	bufcnt = parseFreq(buf, count, &freq);
-	gpio_base[7] = 1 << MOT_DIR_PIN;
-	//gpio_base[10] = 1 << MOT_DIR_PIN;
 	printk(KERN_INFO "count: %d  freq:%d\n", count, freq);
 	set_motor_freq(freq);
 
