@@ -35,13 +35,16 @@ __attribute__((section("__versions"))) = {
 	{ 0x72c8b357, "cdev_add" },
 	{ 0xad28f044, "cdev_init" },
 	{ 0xe3ec2f2b, "alloc_chrdev_region" },
-	{ 0x7c32d0f0, "printk" },
 	{ 0x8e865d3c, "arm_delay_ops" },
-	{ 0xdb7305a1, "__stack_chk_fail" },
-	{ 0x28cc25db, "arm_copy_from_user" },
-	{ 0x8f678b07, "__stack_chk_guard" },
-	{ 0x2e5810c6, "__aeabi_unwind_cpp_pr1" },
 	{ 0xe97c4103, "ioremap" },
+	{ 0x2e5810c6, "__aeabi_unwind_cpp_pr1" },
+	{ 0xdb7305a1, "__stack_chk_fail" },
+	{ 0x5f754e5a, "memset" },
+	{ 0x7c32d0f0, "printk" },
+	{ 0x37a0cba, "kfree" },
+	{ 0x28cc25db, "arm_copy_from_user" },
+	{ 0x12da5bb2, "__kmalloc" },
+	{ 0x8f678b07, "__stack_chk_guard" },
 	{ 0xb1ad28e0, "__gnu_mcount_nc" },
 	{ 0x2196324, "__aeabi_idiv" },
 	{ 0xe707d823, "__aeabi_uidiv" },
@@ -53,4 +56,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "7A0DC59213C1C7CE402647C");
+MODULE_INFO(srcversion, "640BB028E7AF2016C8C2D4E");
