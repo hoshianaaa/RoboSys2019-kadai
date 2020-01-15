@@ -6,7 +6,7 @@
 + PWMはレジスタから設定  
   
 ## 実験結果  
-  
++ [YouTube](https://www.youtube.com/watch?v=UzrsNDXSdO8&feature=youtu.be)  
 ## 環境  
 + Raspberry Pi 3 Model B Plus Rev 1.3 (BCM2835)  
 + Raspbian GNU/Linux 9.6 (stretch) armv7l  
